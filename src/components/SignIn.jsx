@@ -25,7 +25,16 @@ export default function SignIn({ providers }) {
         <p className="signin-note">
           Read-only access. Nothing is sent to an AI.
         </p>
+        <ul className="signin-how">
+          <li>Connect a Gmail or Outlook mailbox you own.</li>
+          <li>Type what you're looking for, in your own words.</li>
+          <li>The app searches live and shows matching emails — nothing is ever stored or read by anyone but you.</li>
+        </ul>
       </div>
+      <footer className="signin-footer">
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+      </footer>
     </div>
   )
 }
