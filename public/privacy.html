@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Privacy Policy — Email Scanner</title>
+<style>
+  :root{--bg:#fafafa;--card:#ffffff;--ink:#18181b;--ink-soft:#52525b;--ink-faint:#a1a1aa;--line:#e8e8ec;--accent:#2563eb;--radius:16px}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:680px;margin:0 auto;padding:56px 24px 96px}
+  .mark{font-size:28px;margin-bottom:8px}
+  h1{font-size:26px;font-weight:650;letter-spacing:-0.02em;margin:0 0 4px}
+  .updated{color:var(--ink-faint);font-size:13px;margin:0 0 40px}
+  h2{font-size:17px;font-weight:650;margin:36px 0 10px}
+  p,li{color:var(--ink-soft)}
+  ul{padding-left:20px;margin:10px 0}
+  li{margin:6px 0}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;margin:20px 0}
+  .back{display:inline-block;margin-bottom:28px;color:var(--ink-soft);font-size:14px}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-faint);font-size:13px}
+  footer a{margin-right:16px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">← Email Scanner</a>
+    <div class="mark">🔍</div>
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated August 13, 2026</p>
+
+    <p>Email Scanner ("the app") lets you search your own email inbox using plain-English queries. This page explains what data the app accesses, how it's used, and how it's stored.</p>
+
+    <h2>What we collect</h2>
+    <p>When you sign in with Google, the app receives:</p>
+    <ul>
+      <li>Your email address, name, and profile picture (from the standard <code>openid</code>, <code>email</code>, and <code>profile</code> scopes)</li>
+      <li>Read-only access to your Gmail messages (the <code>gmail.readonly</code> scope) — the app cannot send, delete, modify, or organize your email in any way</li>
+    </ul>
+
+    <h2>How your data is used</h2>
+    <div class="card">
+      <p style="margin-top:0">When you type a search, the app queries the Gmail API live and returns matching messages directly to your browser. <strong>Email content is never stored, logged, or written to a database</strong> — it exists only for the moment it takes to answer your search.</p>
+      <p style="margin-bottom:0"><strong>Nothing is sent to an AI or third-party service.</strong> Search ranking runs entirely in the app's own code.</p>
+    </div>
+
+    <h2>What's stored</h2>
+    <p>To keep you signed in and remember which mailboxes you've connected, we store:</p>
+    <ul>
+      <li>Your email, name, and profile picture</li>
+      <li>Your OAuth access and refresh tokens, encrypted at rest with AES-256-GCM — even someone with direct database access cannot read them without the app's separate encryption key</li>
+    </ul>
+    <p>Your sign-in session is a signed, HTTP-only cookie that expires after 7 days.</p>
+
+    <h2>Sharing</h2>
+    <p>We do not sell, rent, or share your data with advertisers, data brokers, or any other third party. Your data is only ever exchanged with Google's own APIs (to fetch mail on your behalf) and our database provider (Supabase), which stores your encrypted account record.</p>
+
+    <h2>Your control over your data</h2>
+    <ul>
+      <li><strong>Disconnect a mailbox</strong> at any time from within the app — this immediately and permanently deletes the stored account record and tokens for that mailbox.</li>
+      <li><strong>Sign out</strong> to end your session.</li>
+      <li><strong>Revoke access</strong> at any time from your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account permissions page</a>, independent of the app.</li>
+    </ul>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy or your data can be sent to <a href="mailto:bill.jyang101@gmail.com">bill.jyang101@gmail.com</a>.</p>
+
+    <footer>
+      <a href="/">Home</a>
+      <a href="/terms.html">Terms of Service</a>
+    </footer>
+  </div>
+</body>
+</html>
