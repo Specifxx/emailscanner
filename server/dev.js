@@ -13,6 +13,7 @@ const ROUTES = [
   ['/api/auth/callback', '../api/auth/callback.js'],
   ['/api/auth/logout', '../api/auth/logout.js'],
   ['/api/accounts/disconnect', '../api/accounts/disconnect.js'],
+  ['/api/account/delete', '../api/account/delete.js'],
   ['/api/billing/checkout', '../api/billing/checkout.js'],
   ['/api/billing/portal', '../api/billing/portal.js'],
   ['/api/me', '../api/me.js'],

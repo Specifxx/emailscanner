@@ -142,7 +142,11 @@ export default function SignIn({ providers, billing, notice }) {
       </section>
 
       <footer className="landing-foot">
-        Email Scanner · Read-only access · Nothing sent to an AI
+        <div>Email Scanner · Read-only access · Nothing sent to an AI</div>
+        <div className="foot-links">
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms</a>
+        </div>
       </footer>
     </div>
   )

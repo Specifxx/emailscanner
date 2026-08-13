@@ -110,6 +110,28 @@ export default function App() {
     }
   }
 
+  async function deleteAccount() {
+    const confirmed = window.confirm(
+      'Delete your account?\n\nEvery connected mailbox and its stored tokens are removed permanently. Your email itself is untouched.'
+    )
+    if (!confirmed) return
+
+    setNotice(null)
+    try {
+      await api.deleteMyAccount()
+      setMe((current) => ({
+        user: null,
+        accounts: [],
+        providers: current.providers,
+        billing: current.billing,
+      }))
+      setQuery('')
+      setState({ status: 'idle' })
+    } catch (err) {
+      setNotice(err.message)
+    }
+  }
+
   async function disconnect(account) {
     if (!window.confirm(`Disconnect ${account.email}?`)) return
     setNotice(null)
@@ -179,6 +201,14 @@ export default function App() {
         billing={me.billing}
         onUpgrade={() => upgrade('month')}
       />
+
+      <footer className="app-foot">
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <button className="danger-link" onClick={deleteAccount}>
+          Delete account
+        </button>
+      </footer>
     </div>
   )
 }
