@@ -40,6 +40,11 @@ export function disconnect(accountId) {
   })
 }
 
+/** Deletes the whole account — every connected mailbox goes with it. */
+export function deleteMyAccount() {
+    return request('/api/account/delete', { method: 'POST' })
+}
+
 /** Full page navigation — the OAuth dance has to leave the SPA. */
 export function connect(provider) {
   window.location.href = `/api/auth/start?provider=${encodeURIComponent(provider)}`
