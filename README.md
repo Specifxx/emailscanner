@@ -119,6 +119,9 @@ npm run dev               # http://localhost:3000
    - `GOOGLE_REDIRECT_URI=https://your-app.vercel.app/api/auth/callback`
    - `APP_URL=https://your-app.vercel.app`
 3. Redeploy — environment variables only apply to builds that come after them.
+4. **Settings → Analytics → Enable.** The `<Analytics />` component is already
+   wired into `src/main.jsx`; this switches on collection for the project. It
+   only sends events when served by Vercel, so local dev stays silent.
 
 ## Security notes
 
