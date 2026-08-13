@@ -1,25 +1,11 @@
 import { getSession } from '../lib/session.js'
-import { getUserById } from '../lib/supabase.js'
-import {
-  AuthError,
-  getAccessToken,
-  searchMessages,
-  fetchMessages,
-} from '../lib/gmail.js'
-import { parseQuery, buildGmailQuery, rankEmails } from '../lib/scorer.js'
+import { listAccounts } from '../lib/supabase.js'
+import { AuthError } from '../lib/errors.js'
+import { getAccessToken, getProvider } from '../lib/providers/index.js'
+import { parseQuery, rankEmails } from '../lib/scorer.js'
+import { readJsonBody } from '../lib/http.js'
 
-const MAX_CANDIDATES = 100
-
-async function readBody(req) {
-  if (req.body) {
-    return typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-  }
-
-  const chunks = []
-  for await (const chunk of req) chunks.push(chunk)
-  if (!chunks.length) return {}
-  return JSON.parse(Buffer.concat(chunks).toString('utf8'))
-}
+const MAX_PER_ACCOUNT = 100
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -33,7 +19,7 @@ export default async function handler(req, res) {
 
   let query
   try {
-    ;({ query } = await readBody(req))
+    ;({ query } = await readJsonBody(req))
   } catch {
     return res.status(400).json({ error: 'Could not read your request.' })
   }
@@ -43,28 +29,66 @@ export default async function handler(req, res) {
   }
 
   try {
-    const user = await getUserById(session.uid)
-    if (!user) {
-      return res.status(401).json({ error: 'Please sign in again.' })
+    const accounts = await listAccounts(session.uid)
+    if (!accounts.length) {
+      return res.status(400).json({ error: 'Connect a mailbox first.' })
     }
-
-    const accessToken = await getAccessToken(user)
 
     const parsed = parseQuery(query)
-    const gmailQuery = buildGmailQuery(parsed)
 
-    const ids = await searchMessages(accessToken, gmailQuery, MAX_CANDIDATES)
-    if (!ids.length) {
-      return res.status(200).json({ emails: [], scanned: 0, query: gmailQuery })
+    // Every mailbox is searched at once. One failing mailbox degrades to a
+    // warning instead of sinking the whole scan.
+    const results = await Promise.all(
+      accounts.map(async (account) => {
+        try {
+          const accessToken = await getAccessToken(account)
+          const messages = await getProvider(account.provider).search(
+            accessToken,
+            parsed,
+            MAX_PER_ACCOUNT
+          )
+          return {
+            messages: messages.map((message) => ({
+              ...message,
+              accountId: account.id,
+              accountEmail: account.email,
+              provider: account.provider,
+            })),
+          }
+        } catch (err) {
+          console.error(`Scan failed for ${account.email}:`, err)
+          return {
+            messages: [],
+            failure: {
+              email: account.email,
+              needsReconnect: err instanceof AuthError,
+              message: err.message,
+            },
+          }
+        }
+      })
+    )
+
+    const messages = results.flatMap((result) => result.messages)
+    const failures = results.map((r) => r.failure).filter(Boolean)
+
+    // Every mailbox failed, so this is an error rather than an empty result.
+    if (!messages.length && failures.length === accounts.length) {
+      const needsReconnect = failures.some((f) => f.needsReconnect)
+      return res.status(needsReconnect ? 401 : 502).json({
+        error: failures[0].message,
+      })
     }
 
-    const messages = await fetchMessages(accessToken, ids)
-    const emails = rankEmails(messages, parsed)
-
     res.status(200).json({
-      emails,
+      emails: rankEmails(messages, parsed),
       scanned: messages.length,
+      mailboxes: accounts.length,
       categories: parsed.categories,
+      failures: failures.map((f) => ({
+        email: f.email,
+        needsReconnect: f.needsReconnect,
+      })),
     })
   } catch (err) {
     if (err instanceof AuthError) {

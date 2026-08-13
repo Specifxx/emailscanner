@@ -77,7 +77,13 @@ button {
   font-size: 15px;
 }
 
-.google-btn {
+.signin-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.provider-btn {
   width: 100%;
   display: flex;
   align-items: center;
@@ -93,7 +99,7 @@ button {
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.google-btn:hover {
+.provider-btn:hover {
   background: #f6f6f8;
   border-color: #dcdce2;
 }
@@ -272,10 +278,79 @@ button {
   cursor: default;
 }
 
+/* ---------- Mailboxes ---------- */
+
+.mailboxes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  /* Sits between the header and the search box: what's connected, then what
+     you're looking for. */
+  margin: -14px 0 4px;
+}
+
+.mailbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mailbox.stale {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: var(--danger);
+}
+
+.mailbox-remove {
+  border: 0;
+  background: none;
+  color: var(--ink-faint);
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 4px;
+  border-radius: 999px;
+}
+
+.mailbox-remove:hover {
+  color: var(--danger);
+}
+
+.mailbox.add {
+  padding: 5px 12px;
+  color: var(--ink-faint);
+  border-style: dashed;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.mailbox.add:hover {
+  border-color: #c9d8fb;
+  border-style: solid;
+  color: var(--accent);
+}
+
 /* ---------- Results ---------- */
 
 .results {
   margin-top: 34px;
+}
+
+.via {
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid var(--line);
+  color: var(--ink-faint);
+  font-size: 12px;
 }
 
 .results-meta {

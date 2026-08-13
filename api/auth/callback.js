@@ -1,10 +1,18 @@
 import { config } from '../../lib/config.js'
 import {
   createSessionCookie,
+  getSession,
   parseCookies,
   serializeCookie,
+  stateCookieName,
 } from '../../lib/session.js'
-import { upsertUser } from '../../lib/supabase.js'
+import {
+  createUser,
+  findAccount,
+  getUser,
+  saveAccount,
+} from '../../lib/supabase.js'
+import { getProvider, isProvider } from '../../lib/providers/index.js'
 
 function redirect(res, cookies, path) {
   res.setHeader('Set-Cookie', cookies)
@@ -16,8 +24,15 @@ export default async function handler(req, res) {
   const url = new URL(req.url, config.appUrl)
   const code = url.searchParams.get('code')
   const state = url.searchParams.get('state')
-  const expectedState = parseCookies(req).oauth_state
-  const clearState = serializeCookie('oauth_state', '', { maxAge: 0 })
+
+  // Which provider this is claiming to be. Untrusted until the state matches
+  // the cookie we set when the flow started.
+  const claimed = String(state || '').split(':')[0]
+  const cookieName = isProvider(claimed)
+    ? stateCookieName(claimed)
+    : 'oauth_state'
+  const expectedState = parseCookies(req)[cookieName]
+  const clearState = serializeCookie(cookieName, '', { maxAge: 0 })
 
   if (url.searchParams.get('error')) {
     return redirect(res, [clearState], '/?error=declined')
@@ -25,55 +40,65 @@ export default async function handler(req, res) {
   if (!code) {
     return redirect(res, [clearState], '/?error=missing_code')
   }
+  if (!isProvider(claimed)) {
+    return redirect(res, [clearState], '/?error=unknown_provider')
+  }
   if (!state || !expectedState || state !== expectedState) {
     return redirect(res, [clearState], '/?error=bad_state')
   }
 
+  // Verified: the state matched the cookie we issued, so this really is the
+  // provider we started the flow with.
+  const providerId = claimed
+
   try {
-    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        code,
-        client_id: config.googleClientId,
-        client_secret: config.googleClientSecret,
-        redirect_uri: config.googleRedirectUri,
-        grant_type: 'authorization_code',
-      }),
-    })
+    const provider = getProvider(providerId)
+    const tokens = await provider.exchangeCode(code)
+    const profile = await provider.fetchProfile(tokens.accessToken, tokens.idToken)
 
-    const tokens = await tokenRes.json()
-    if (!tokenRes.ok) {
-      throw new Error(tokens.error_description || 'Token exchange failed')
+    // An existing session means "add this mailbox to the account I am already
+    // signed in to" rather than "sign me in".
+    const session = getSession(req)
+    const existing = await findAccount(providerId, profile.providerId)
+
+    let userId
+    if (session?.uid && (await getUser(session.uid))) {
+      if (existing && existing.user_id !== session.uid) {
+        return redirect(res, [clearState], '/?error=already_linked')
+      }
+      userId = session.uid
+    } else if (existing) {
+      userId = existing.user_id
+    } else {
+      const user = await createUser({
+        email: profile.email,
+        name: profile.name,
+        picture: profile.picture,
+      })
+      userId = user.id
     }
 
-    const profileRes = await fetch(
-      'https://www.googleapis.com/oauth2/v3/userinfo',
-      { headers: { Authorization: `Bearer ${tokens.access_token}` } }
-    )
-    const profile = await profileRes.json()
-    if (!profileRes.ok) {
-      throw new Error('Could not read your Google profile')
-    }
-
-    const user = await upsertUser({
-      googleId: profile.sub,
+    await saveAccount({
+      userId,
+      provider: providerId,
+      providerId: profile.providerId,
       email: profile.email,
       name: profile.name,
       picture: profile.picture,
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      expiresAt: Date.now() + (tokens.expires_in || 3600) * 1000,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresAt: tokens.expiresAt,
     })
 
-    const session = createSessionCookie({
-      uid: user.id,
+    const user = await getUser(userId)
+    const cookie = createSessionCookie({
+      uid: userId,
       email: user.email,
       name: user.name,
       picture: user.picture,
     })
 
-    return redirect(res, [clearState, session], '/')
+    return redirect(res, [clearState, cookie], '/')
   } catch (err) {
     console.error('OAuth callback failed:', err)
     return redirect(res, [clearState], '/?error=auth_failed')

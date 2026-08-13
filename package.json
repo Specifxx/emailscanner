@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=18.17"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "concurrently -k \"node server/dev.js\" \"vite\"",

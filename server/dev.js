@@ -9,9 +9,10 @@ import express from 'express'
 const PORT = process.env.DEV_API_PORT || 3001
 
 const ROUTES = [
-  ['/api/auth/google', '../api/auth/google.js'],
+  ['/api/auth/start', '../api/auth/start.js'],
   ['/api/auth/callback', '../api/auth/callback.js'],
   ['/api/auth/logout', '../api/auth/logout.js'],
+  ['/api/accounts/disconnect', '../api/accounts/disconnect.js'],
   ['/api/me', '../api/me.js'],
   ['/api/scan', '../api/scan.js'],
 ]

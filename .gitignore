@@ -1,6 +1,10 @@
 node_modules/
 dist/
-.env
-.env.local
 .vercel/
 .DS_Store
+
+# Secrets. .env.example is the only env file that belongs in git.
+.env*
+!.env.example
+client_secret*.json
+*.pem

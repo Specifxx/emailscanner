@@ -32,3 +32,15 @@ export function scan(query) {
 export function logout() {
   return request('/api/auth/logout', { method: 'POST' })
 }
+
+export function disconnect(accountId) {
+  return request('/api/accounts/disconnect', {
+    method: 'POST',
+    body: JSON.stringify({ accountId }),
+  })
+}
+
+/** Full page navigation — the OAuth dance has to leave the SPA. */
+export function connect(provider) {
+  window.location.href = `/api/auth/start?provider=${encodeURIComponent(provider)}`
+}

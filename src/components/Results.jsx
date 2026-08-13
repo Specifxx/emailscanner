@@ -34,7 +34,7 @@ function Skeleton() {
   )
 }
 
-export default function Results({ state }) {
+export default function Results({ state, multiple }) {
   if (state.status === 'idle') {
     return (
       <div className="results">
@@ -65,11 +65,20 @@ export default function Results({ state }) {
     )
   }
 
-  const { emails, scanned } = state
+  const { emails, scanned, mailboxes, failures } = state
+
+  const skipped = failures?.length ? (
+    <div className="error">
+      <span aria-hidden="true">⚠</span>
+      Couldn't search {failures.map((f) => f.email).join(', ')}
+      {failures.some((f) => f.needsReconnect) ? ' — reconnect it below.' : '.'}
+    </div>
+  ) : null
 
   if (!emails.length) {
     return (
       <div className="results">
+        {skipped}
         <div className="list">
           <div className="empty">
             <strong>No matches found</strong>
@@ -82,19 +91,25 @@ export default function Results({ state }) {
 
   return (
     <div className="results">
+      {skipped}
       <div className="results-meta">
         <span>
           {emails.length} {emails.length === 1 ? 'match' : 'matches'}
         </span>
-        {scanned ? <span>{scanned} emails scanned</span> : null}
+        {scanned ? (
+          <span>
+            {scanned} scanned
+            {mailboxes > 1 ? ` across ${mailboxes} mailboxes` : ''}
+          </span>
+        ) : null}
       </div>
 
       <div className="list">
         {emails.map((email) => (
           <a
             className="row"
-            key={email.id}
-            href={`https://mail.google.com/mail/u/0/#all/${email.threadId || email.id}`}
+            key={`${email.accountEmail}:${email.id}`}
+            href={email.url}
             target="_blank"
             rel="noreferrer"
           >
@@ -106,7 +121,10 @@ export default function Results({ state }) {
                 </div>
                 <div className="date">{formatDate(email.date)}</div>
               </div>
-              <div className="sender">{email.from}</div>
+              <div className="sender">
+                {email.from}
+                {multiple ? <span className="via">{email.accountEmail}</span> : null}
+              </div>
               {email.snippet ? <div className="snippet">{email.snippet}</div> : null}
             </div>
             <div className={scoreClass(email.score)}>{email.score}</div>
