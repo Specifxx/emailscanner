@@ -5,7 +5,7 @@ export default function Header({ user, onSignOut }) {
     <header className="header">
       <div className="brand">
         <span aria-hidden="true">🔍</span>
-        Inbox Finder
+        Email Scanner
       </div>
       <div className="header-right">
         {user?.picture ? (

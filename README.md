@@ -1,4 +1,4 @@
-# Inbox Finder
+# Email Scanner
 
 Search your Gmail in plain English. Type *"Show me job offers I might have missed"*
 or *"Find wedding invites"* and get back the matching emails — read and unread —
