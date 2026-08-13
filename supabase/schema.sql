@@ -18,6 +18,14 @@ create table if not exists public.users (
   email text not null,
   name text,
   picture text,
+  plan text not null default 'free' check (plan in ('free', 'pro')),
+  -- Usage counter plus the start of the window it belongs to. When the window
+  -- rolls over, the counter resets rather than being swept by a cron job.
+  scans_used integer not null default 0,
+  scan_period_start timestamptz,
+  stripe_customer_id text,
+  stripe_subscription_id text,
+  plan_renews_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -40,12 +48,59 @@ create table if not exists public.accounts (
 );
 
 create index if not exists accounts_user_id_idx on public.accounts (user_id);
+create index if not exists users_stripe_customer_idx on public.users (stripe_customer_id);
 
 -- The API talks to these tables with the secret/service-role key, which
 -- bypasses RLS. Enabling RLS with no policies means the publishable (anon) key
 -- can read nothing.
 alter table public.users enable row level security;
 alter table public.accounts enable row level security;
+
+-- Claims one scan against the user's allowance, rolling the counter over if the
+-- billing window has changed. Done in the database under a row lock so two
+-- concurrent scans cannot both slip past the limit.
+create or replace function public.consume_scan(
+  p_user_id uuid,
+  p_limit integer,
+  p_period_start timestamptz
+)
+returns table (allowed boolean, used integer)
+language plpgsql
+as $$
+declare
+  v_used integer;
+begin
+  select case
+           when u.scan_period_start is distinct from p_period_start then 0
+           else u.scans_used
+         end
+    into v_used
+    from public.users u
+   where u.id = p_user_id
+     for update;
+
+  if v_used is null then
+    return query select false, 0;
+    return;
+  end if;
+
+  if v_used >= p_limit then
+    update public.users
+       set scans_used = v_used, scan_period_start = p_period_start
+     where id = p_user_id;
+    return query select false, v_used;
+    return;
+  end if;
+
+  update public.users
+     set scans_used = v_used + 1,
+         scan_period_start = p_period_start,
+         updated_at = now()
+   where id = p_user_id;
+
+  return query select true, v_used + 1;
+end;
+$$;
 
 -- Supabase stopped auto-exposing new public tables to the Data API in 2026, and
 -- that removed the implicit grants for service_role too. Without these, every
@@ -54,3 +109,4 @@ alter table public.accounts enable row level security;
 grant usage on schema public to service_role;
 grant select, insert, update, delete on public.users to service_role;
 grant select, insert, update, delete on public.accounts to service_role;
+grant execute on function public.consume_scan(uuid, integer, timestamptz) to service_role;

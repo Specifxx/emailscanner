@@ -5,7 +5,7 @@ export default function Mailboxes({ accounts, providers, onDisconnect, needsReco
   return (
     <div className="mailboxes">
       {accounts.map((account) => {
-        const stale = needsReconnect.includes(account.email)
+        const stale = needsReconnect.includes(account.id)
         return (
           <span
             className={stale ? 'mailbox stale' : 'mailbox'}

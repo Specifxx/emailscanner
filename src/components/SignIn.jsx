@@ -1,31 +1,149 @@
 import * as api from '../api.js'
 import ProviderMark from './ProviderMark.jsx'
+import Pricing from './Pricing.jsx'
+import TrustIcon from './TrustIcon.jsx'
 
-export default function SignIn({ providers }) {
+/**
+ * Each promise is one the code actually keeps, and names the mechanism rather
+ * than asserting trustworthiness — "we never request bodies" is checkable,
+ * "we respect your privacy" is not.
+ */
+const PROMISES = [
+  {
+    icon: 'eye',
+    title: 'Read-only, always',
+    body: 'We ask Google and Microsoft for read-only access. The app has no permission to send, delete, or change anything — not even if it wanted to.',
+  },
+  {
+    icon: 'envelope',
+    title: 'Your emails are never opened',
+    body: 'Scans read subject lines, senders, dates, and the preview line your inbox already shows. Message bodies are never requested, so we never receive them.',
+  },
+  {
+    icon: 'noRobot',
+    title: 'No AI, no training',
+    body: 'Matching is a keyword dictionary and a scoring function. Nothing is sent to a language model, and nothing is used to train anything.',
+  },
+  {
+    icon: 'database',
+    title: 'Nothing is stored',
+    body: 'Results are assembled per search and sent straight to your browser. No mail is written to our database — only your email address and an encrypted access token.',
+  },
+  {
+    icon: 'lock',
+    title: 'Tokens encrypted at rest',
+    body: 'Access tokens are encrypted with AES-256-GCM before they touch the database, so a stolen database dump still opens no mailboxes.',
+  },
+  {
+    icon: 'unplug',
+    title: 'Revoke in one click',
+    body: 'Disconnect a mailbox here, or cut access from your Google or Microsoft account settings. Either way access ends immediately.',
+  },
+]
+
+const STEPS = [
+  { n: 1, title: 'Connect a mailbox', body: 'Sign in with Google or Outlook. Add as many as you like.' },
+  { n: 2, title: 'Say what you want', body: '“Job offers I might have missed.” Plain English, no search syntax.' },
+  { n: 3, title: 'Get it ranked', body: 'Every mailbox at once, best matches first, read and unread.' },
+]
+
+export default function SignIn({ providers, billing, notice }) {
+  const buttons = (
+    <div className="signin-buttons">
+      {providers.map((provider) => (
+        <button
+          key={provider.id}
+          className="provider-btn"
+          onClick={() => api.connect(provider.id)}
+        >
+          <ProviderMark provider={provider.id} />
+          Continue with {provider.label}
+        </button>
+      ))}
+      {!providers.length ? (
+        <p className="signin-note">Sign-in is temporarily unavailable.</p>
+      ) : null}
+    </div>
+  )
+
   return (
-    <div className="signin-page">
-      <div className="signin-card">
-        <div className="signin-mark">🔍</div>
-        <h1>Find what your inbox buried.</h1>
-        <p>Search your email the way you'd say it out loud.</p>
+    <div className="landing">
+      <header className="landing-nav">
+        <div className="brand">
+          <span aria-hidden="true">🔍</span>
+          Email Scanner
+        </div>
+        <a className="nav-link" href="#pricing">
+          Pricing
+        </a>
+      </header>
 
-        <div className="signin-buttons">
-          {providers.map((provider) => (
-            <button
-              key={provider.id}
-              className="provider-btn"
-              onClick={() => api.connect(provider.id)}
-            >
-              <ProviderMark provider={provider.id} />
-              Continue with {provider.label}
-            </button>
+      {notice ? <div className="error landing-error">{notice}</div> : null}
+
+      <section className="hero">
+        <h1>Find what your inbox buried.</h1>
+        <p className="hero-lead">
+          Search Gmail and Outlook the way you'd say it out loud. One search,
+          every mailbox, ranked by how well it actually matches.
+        </p>
+
+        {buttons}
+
+        <p className="hero-note">
+          Read-only access · Your emails are never opened · Free to start
+        </p>
+      </section>
+
+      <section className="steps">
+        {STEPS.map((step) => (
+          <div className="step" key={step.n}>
+            <div className="step-n">{step.n}</div>
+            <div>
+              <div className="step-title">{step.title}</div>
+              <p>{step.body}</p>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <section className="trust">
+        <h2>What this app can and cannot do</h2>
+        <p className="trust-lead">
+          Connecting a mailbox to anything should make you cautious. Here is
+          exactly what happens, and what is not possible by design.
+        </p>
+
+        <div className="promises">
+          {PROMISES.map((promise) => (
+            <div className="promise" key={promise.title}>
+              <div className="promise-icon">
+                <TrustIcon name={promise.icon} />
+              </div>
+              <div className="promise-title">{promise.title}</div>
+              <p>{promise.body}</p>
+            </div>
           ))}
         </div>
 
-        <p className="signin-note">
-          Read-only access. Nothing is sent to an AI.
-        </p>
-      </div>
+        <div className="scope-note">
+          <strong>The permission you'll be asked for</strong>
+          <code>gmail.readonly</code> on Google, <code>Mail.Read</code> on
+          Microsoft. Both are read-only. Neither allows sending, deleting, or
+          modifying mail, and neither grants access to contacts, files, or
+          calendars.
+        </div>
+      </section>
+
+      <Pricing currentPlan={null} billing={billing} onUpgrade={() => {}} />
+
+      <section className="closer">
+        <h2>Ready when you are.</h2>
+        {buttons}
+      </section>
+
+      <footer className="landing-foot">
+        Email Scanner · Read-only access · Nothing sent to an AI
+      </footer>
     </div>
   )
 }

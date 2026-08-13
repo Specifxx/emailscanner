@@ -1,5 +1,15 @@
-export default function Header({ user, onSignOut }) {
+export default function Header({
+  user,
+  plan,
+  billing,
+  onSignOut,
+  onUpgrade,
+  onManage,
+}) {
   const initial = (user?.name || user?.email || '?').trim().charAt(0).toUpperCase()
+
+  const remaining = plan ? Math.max(0, plan.limit - plan.used) : null
+  const low = remaining !== null && remaining <= Math.max(1, plan.limit * 0.2)
 
   return (
     <header className="header">
@@ -7,7 +17,29 @@ export default function Header({ user, onSignOut }) {
         <span aria-hidden="true">🔍</span>
         Email Scanner
       </div>
+
       <div className="header-right">
+        {plan ? (
+          <span
+            className={low ? 'usage low' : 'usage'}
+            title={`${plan.used} of ${plan.limit} scans used this ${plan.period}`}
+          >
+            {remaining} left
+          </span>
+        ) : null}
+
+        {plan?.id === 'free' && billing ? (
+          <button className="upgrade-btn" onClick={onUpgrade}>
+            Upgrade
+          </button>
+        ) : null}
+
+        {plan?.id === 'pro' && billing ? (
+          <button className="signout" onClick={onManage}>
+            Billing
+          </button>
+        ) : null}
+
         {user?.picture ? (
           <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />
         ) : (

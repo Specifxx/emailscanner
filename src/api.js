@@ -13,7 +13,10 @@ async function request(path, options = {}) {
   }
 
   if (!res.ok) {
-    throw new Error(body?.error || `Something went wrong (${res.status}).`)
+    const error = new Error(body?.error || `Something went wrong (${res.status}).`)
+    error.status = res.status
+    error.body = body
+    throw error
   }
   return body
 }
@@ -43,4 +46,17 @@ export function disconnect(accountId) {
 /** Full page navigation — the OAuth dance has to leave the SPA. */
 export function connect(provider) {
   window.location.href = `/api/auth/start?provider=${encodeURIComponent(provider)}`
+}
+
+export async function upgrade(interval = 'month') {
+  const { url } = await request('/api/billing/checkout', {
+    method: 'POST',
+    body: JSON.stringify({ interval }),
+  })
+  window.location.href = url
+}
+
+export async function manageBilling() {
+  const { url } = await request('/api/billing/portal', { method: 'POST' })
+  window.location.href = url
 }

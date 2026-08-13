@@ -10,9 +10,11 @@ import {
   createUser,
   findAccount,
   getUser,
+  listAccounts,
   saveAccount,
 } from '../../lib/supabase.js'
 import { getProvider, isProvider } from '../../lib/providers/index.js'
+import { getPlan } from '../../lib/plans.js'
 
 function redirect(res, cookies, path) {
   res.setHeader('Set-Cookie', cookies)
@@ -62,11 +64,21 @@ export default async function handler(req, res) {
     const existing = await findAccount(providerId, profile.providerId)
 
     let userId
-    if (session?.uid && (await getUser(session.uid))) {
-      if (existing && existing.user_id !== session.uid) {
+    const sessionUser = session?.uid ? await getUser(session.uid) : null
+
+    if (sessionUser) {
+      if (existing && existing.user_id !== sessionUser.id) {
         return redirect(res, [clearState], '/?error=already_linked')
       }
-      userId = session.uid
+      // Only a genuinely new mailbox counts against the plan limit;
+      // reconnecting one you already have must always be allowed.
+      if (!existing) {
+        const attached = await listAccounts(sessionUser.id)
+        if (attached.length >= getPlan(sessionUser.plan).mailboxes) {
+          return redirect(res, [clearState], '/?error=mailbox_limit')
+        }
+      }
+      userId = sessionUser.id
     } else if (existing) {
       userId = existing.user_id
     } else {

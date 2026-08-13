@@ -34,7 +34,7 @@ function Skeleton() {
   )
 }
 
-export default function Results({ state, multiple }) {
+export default function Results({ state, multiple, billing, onUpgrade }) {
   if (state.status === 'idle') {
     return (
       <div className="results">
@@ -55,6 +55,24 @@ export default function Results({ state, multiple }) {
   }
 
   if (state.status === 'error') {
+    if (state.outOfScans) {
+      return (
+        <div className="results">
+          <div className="list">
+            <div className="empty">
+              <strong>You're out of scans</strong>
+              {state.error}
+              {state.canUpgrade && billing ? (
+                <button className="tier-btn inline-upgrade" onClick={onUpgrade}>
+                  Upgrade to Pro
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="results">
         <div className="error">

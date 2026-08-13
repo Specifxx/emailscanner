@@ -32,6 +32,26 @@ scan costs nothing beyond the mail API round-trips.
 If one mailbox fails — an expired token, a provider outage — the scan still
 returns everything else and flags the one that needs reconnecting.
 
+## Plans
+
+| | Free | Pro |
+|---|---|---|
+| Scans | 10 per day | 800 per month |
+| Mailboxes | 2 | Unlimited |
+| Price | — | $24/month, or $20/month billed yearly |
+
+Limits live in `lib/plans.js`. Enforcement is server-side in `api/scan.js`: a
+scan is claimed through the `consume_scan` Postgres function before any mail API
+call, so going over costs nothing and two concurrent scans can't both slip past
+the limit. The counter resets when its window rolls over rather than by a cron
+job.
+
+Billing is optional. With no Stripe keys the app runs free-tier only and the
+upgrade button reads "Coming soon"; set the keys in `.env.example` and checkout,
+the billing portal, and the webhook all switch on. Only the webhook grants a
+plan — the checkout redirect never does, so a user cannot self-upgrade by
+hitting the success URL.
+
 ## Stack
 
 React + Vite on the frontend, Node serverless functions in `/api`, the Gmail and
@@ -39,9 +59,9 @@ Microsoft Graph REST APIs, Supabase (Postgres) for accounts and tokens. Deploys
 to Vercel.
 
 ```
-src/                React app — two screens, one stylesheet, no UI framework
-api/                Serverless functions (auth, me, accounts, scan)
-lib/                Config, session, encryption, Supabase, scorer
+src/                React app — landing page and search screen, one stylesheet
+api/                Serverless functions (auth, me, accounts, scan, billing)
+lib/                Config, session, encryption, Supabase, scorer, plans
 lib/providers/      One adapter per mail provider, behind a shared interface
 supabase/           Database schema
 server/dev.js       Local Express wrapper so `npm run dev` works without Vercel

@@ -1,9 +1,10 @@
 import { getSession } from '../lib/session.js'
-import { listAccounts } from '../lib/supabase.js'
+import { consumeScan, getUser, listAccounts } from '../lib/supabase.js'
 import { AuthError } from '../lib/errors.js'
 import { getAccessToken, getProvider } from '../lib/providers/index.js'
 import { parseQuery, rankEmails } from '../lib/scorer.js'
 import { readJsonBody } from '../lib/http.js'
+import { getPlan, periodStart } from '../lib/plans.js'
 
 const MAX_PER_ACCOUNT = 100
 
@@ -34,6 +35,31 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Connect a mailbox first.' })
     }
 
+    const user = await getUser(session.uid)
+    if (!user) {
+      return res.status(401).json({ error: 'Please sign in again.' })
+    }
+
+    // Claimed before any mail API calls, so a user over their limit costs us
+    // nothing.
+    const plan = getPlan(user.plan)
+    const quota = await consumeScan(
+      session.uid,
+      plan.scans,
+      periodStart(plan)
+    )
+
+    if (!quota.allowed) {
+      return res.status(402).json({
+        error:
+          plan.period === 'day'
+            ? `That's all ${plan.scans} scans for today. They reset at midnight UTC, or upgrade for 800 a month.`
+            : `You've used all ${plan.scans} scans this month.`,
+        upgrade: plan.id === 'free',
+        usage: { used: quota.used, limit: plan.scans, period: plan.period },
+      })
+    }
+
     const parsed = parseQuery(query)
 
     // Every mailbox is searched at once. One failing mailbox degrades to a
@@ -45,7 +71,7 @@ export default async function handler(req, res) {
           const messages = await getProvider(account.provider).search(
             accessToken,
             parsed,
-            MAX_PER_ACCOUNT
+            { limit: MAX_PER_ACCOUNT, accountEmail: account.email }
           )
           return {
             messages: messages.map((message) => ({
@@ -60,6 +86,9 @@ export default async function handler(req, res) {
           return {
             messages: [],
             failure: {
+              // Keyed by id, not email: two mailboxes can share an address
+              // across providers, and matching on email flags the healthy one.
+              accountId: account.id,
               email: account.email,
               needsReconnect: err instanceof AuthError,
               message: err.message,
@@ -86,9 +115,11 @@ export default async function handler(req, res) {
       mailboxes: accounts.length,
       categories: parsed.categories,
       failures: failures.map((f) => ({
+        accountId: f.accountId,
         email: f.email,
         needsReconnect: f.needsReconnect,
       })),
+      usage: { used: quota.used, limit: plan.scans, period: plan.period },
     })
   } catch (err) {
     if (err instanceof AuthError) {
