@@ -25,6 +25,10 @@ export function getMe() {
   return request('/api/me')
 }
 
+export function getStats() {
+  return request('/api/stats')
+}
+
 export function scan(query) {
   return request('/api/scan', {
     method: 'POST',

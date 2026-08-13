@@ -60,7 +60,7 @@ export default function App() {
     const message = readOAuthError()
     const upgraded = params.get('upgraded')
     if (!message && !upgraded) return
-    setNotice(message || "You're on Pro. 800 scans a month, unlimited mailboxes.")
+    setNotice(message || "You're on Pro. Unlimited scans and mailboxes.")
     window.history.replaceState({}, '', window.location.pathname)
   }, [])
 

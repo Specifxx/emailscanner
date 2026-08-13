@@ -36,15 +36,17 @@ returns everything else and flags the one that needs reconnecting.
 
 | | Free | Pro |
 |---|---|---|
-| Scans | 10 per day | 800 per month |
+| Scans | 5 per day | Unlimited |
 | Mailboxes | 2 | Unlimited |
 | Price | — | $24/month, or $20/month billed yearly |
 
-Limits live in `lib/plans.js`. Enforcement is server-side in `api/scan.js`: a
-scan is claimed through the `consume_scan` Postgres function before any mail API
-call, so going over costs nothing and two concurrent scans can't both slip past
-the limit. The counter resets when its window rolls over rather than by a cron
-job.
+Limits live in `lib/plans.js`, where `Infinity` means uncapped. Enforcement is
+server-side in `api/scan.js`: a scan is claimed through the `consume_scan`
+Postgres function before any mail API call, so going over costs nothing and two
+concurrent scans can't both slip past the limit. The counter resets when its
+window rolls over rather than by a cron job. Uncapped plans skip the counter
+entirely — there is nothing to enforce, and the API reports their limit as
+`null` because `Infinity` doesn't survive JSON.
 
 Billing is optional. With no Stripe keys the app runs free-tier only and the
 upgrade button reads "Coming soon"; set the keys in `.env.example` and checkout,

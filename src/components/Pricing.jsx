@@ -8,7 +8,7 @@ export const TIERS = [
     priceAnnual: 0,
     blurb: 'Enough to find what you lost.',
     features: [
-      '10 scans per day',
+      '5 scans per day',
       'Up to 2 mailboxes',
       'Gmail and Outlook',
       'Read and unread mail',
@@ -22,7 +22,7 @@ export const TIERS = [
     featured: true,
     blurb: 'For inboxes you actually live in.',
     features: [
-      '800 scans per month',
+      'Unlimited scans',
       'Unlimited mailboxes',
       'Gmail and Outlook',
       'Priority support',

@@ -2,6 +2,7 @@ import * as api from '../api.js'
 import ProviderMark from './ProviderMark.jsx'
 import Pricing from './Pricing.jsx'
 import TrustIcon from './TrustIcon.jsx'
+import ScanCount from './ScanCount.jsx'
 
 /**
  * Each promise is one the code actually keeps, and names the mechanism rather
@@ -92,6 +93,8 @@ export default function SignIn({ providers, billing, notice }) {
         <p className="hero-note">
           Read-only access · Your emails are never opened · Free to start
         </p>
+
+        <ScanCount />
       </section>
 
       <section className="steps">

@@ -12,6 +12,7 @@
 --
 -- drop table if exists public.accounts;
 -- drop table if exists public.users;
+-- drop table if exists public.stats;
 
 create table if not exists public.users (
   id uuid primary key default gen_random_uuid(),
@@ -50,11 +51,24 @@ create table if not exists public.accounts (
 create index if not exists accounts_user_id_idx on public.accounts (user_id);
 create index if not exists users_stripe_customer_idx on public.users (stripe_customer_id);
 
+-- A single-row counter of every scan ever run, shown on the landing page. The
+-- `id` check constrains the table to exactly one row, so the counter can never
+-- be forked by an accidental insert.
+create table if not exists public.stats (
+  id boolean primary key default true check (id),
+  total_scans bigint not null default 0
+);
+
+insert into public.stats (id, total_scans)
+values (true, 0)
+on conflict (id) do nothing;
+
 -- The API talks to these tables with the secret/service-role key, which
 -- bypasses RLS. Enabling RLS with no policies means the publishable (anon) key
 -- can read nothing.
 alter table public.users enable row level security;
 alter table public.accounts enable row level security;
+alter table public.stats enable row level security;
 
 -- Claims one scan against the user's allowance, rolling the counter over if the
 -- billing window has changed. Done in the database under a row lock so two
@@ -98,6 +112,10 @@ begin
          updated_at = now()
    where id = p_user_id;
 
+  -- Lifetime counter for the landing page. Incremented here so it can never
+  -- drift from the scans that were actually allowed.
+  update public.stats set total_scans = total_scans + 1 where id;
+
   return query select true, v_used + 1;
 end;
 $$;
@@ -109,4 +127,5 @@ $$;
 grant usage on schema public to service_role;
 grant select, insert, update, delete on public.users to service_role;
 grant select, insert, update, delete on public.accounts to service_role;
+grant select, insert, update on public.stats to service_role;
 grant execute on function public.consume_scan(uuid, integer, timestamptz) to service_role;

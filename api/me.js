@@ -2,7 +2,7 @@ import { getSession } from '../lib/session.js'
 import { getUser, listAccounts } from '../lib/supabase.js'
 import { configuredProviders } from '../lib/config.js'
 import { getProvider } from '../lib/providers/index.js'
-import { getPlan, periodStart } from '../lib/plans.js'
+import { getPlan, isUnlimited, periodStart } from '../lib/plans.js'
 import { billingEnabled } from '../lib/billing.js'
 
 export default async function handler(req, res) {
@@ -50,7 +50,9 @@ export default async function handler(req, res) {
         id: plan.id,
         name: plan.name,
         period: plan.period,
-        limit: plan.scans,
+        // null means uncapped; the UI keys off that rather than a sentinel
+        // number, since Infinity does not survive JSON.
+        limit: isUnlimited(plan) ? null : plan.scans,
         used,
         mailboxLimit: plan.mailboxes === Infinity ? null : plan.mailboxes,
         renewsAt: user.plan_renews_at,

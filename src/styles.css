@@ -96,6 +96,32 @@ button {
   color: var(--ink-faint);
 }
 
+.scan-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 26px;
+  padding: 9px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+}
+
+.scan-count strong {
+  font-size: 17px;
+  font-weight: 660;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  /* Digits keep their column as the number animates, so the pill doesn't
+     jitter while counting up. */
+  font-variant-numeric: tabular-nums;
+}
+
+.scan-count span {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
 /* ---------- Steps ---------- */
 
 .steps {

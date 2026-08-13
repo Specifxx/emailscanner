@@ -8,8 +8,10 @@ export default function Header({
 }) {
   const initial = (user?.name || user?.email || '?').trim().charAt(0).toUpperCase()
 
-  const remaining = plan ? Math.max(0, plan.limit - plan.used) : null
-  const low = remaining !== null && remaining <= Math.max(1, plan.limit * 0.2)
+  // limit === null means uncapped, which is different from "not loaded yet".
+  const capped = plan && plan.limit != null
+  const remaining = capped ? Math.max(0, plan.limit - plan.used) : null
+  const low = capped && remaining <= Math.max(1, plan.limit * 0.2)
 
   return (
     <header className="header">
@@ -22,9 +24,13 @@ export default function Header({
         {plan ? (
           <span
             className={low ? 'usage low' : 'usage'}
-            title={`${plan.used} of ${plan.limit} scans used this ${plan.period}`}
+            title={
+              capped
+                ? `${plan.used} of ${plan.limit} scans used today`
+                : 'Unlimited scans'
+            }
           >
-            {remaining} left
+            {capped ? `${remaining} left` : 'Unlimited'}
           </span>
         ) : null}
 

@@ -4,7 +4,12 @@ import { AuthError } from '../lib/errors.js'
 import { getAccessToken, getProvider } from '../lib/providers/index.js'
 import { parseQuery, rankEmails } from '../lib/scorer.js'
 import { readJsonBody } from '../lib/http.js'
-import { getPlan, periodStart } from '../lib/plans.js'
+import {
+  effectiveLimit,
+  getPlan,
+  isUnlimited,
+  periodStart,
+} from '../lib/plans.js'
 
 const MAX_PER_ACCOUNT = 100
 
@@ -41,20 +46,18 @@ export default async function handler(req, res) {
     }
 
     // Claimed before any mail API calls, so a user over their limit costs us
-    // nothing.
+    // nothing. Uncapped plans go through the same call with an effectively
+    // infinite limit, which keeps the lifetime counter accurate for everyone.
     const plan = getPlan(user.plan)
     const quota = await consumeScan(
       session.uid,
-      plan.scans,
+      effectiveLimit(plan),
       periodStart(plan)
     )
 
     if (!quota.allowed) {
       return res.status(402).json({
-        error:
-          plan.period === 'day'
-            ? `That's all ${plan.scans} scans for today. They reset at midnight UTC, or upgrade for 800 a month.`
-            : `You've used all ${plan.scans} scans this month.`,
+        error: `That's all ${plan.scans} scans for today. They reset at midnight UTC — or go Pro for unlimited.`,
         upgrade: plan.id === 'free',
         usage: { used: quota.used, limit: plan.scans, period: plan.period },
       })
@@ -119,7 +122,11 @@ export default async function handler(req, res) {
         email: f.email,
         needsReconnect: f.needsReconnect,
       })),
-      usage: { used: quota.used, limit: plan.scans, period: plan.period },
+      usage: {
+        used: quota.used,
+        limit: isUnlimited(plan) ? null : plan.scans,
+        period: plan.period,
+      },
     })
   } catch (err) {
     if (err instanceof AuthError) {

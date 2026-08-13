@@ -18,6 +18,7 @@ const ROUTES = [
   ['/api/billing/portal', '../api/billing/portal.js'],
   ['/api/me', '../api/me.js'],
   ['/api/scan', '../api/scan.js'],
+  ['/api/stats', '../api/stats.js'],
 ]
 
 const app = express()
