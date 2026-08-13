@@ -5,6 +5,7 @@ import Header from './components/Header.jsx'
 import SearchBar from './components/SearchBar.jsx'
 import Mailboxes from './components/Mailboxes.jsx'
 import Results from './components/Results.jsx'
+import Footer from './components/Footer.jsx'
 
 const OAUTH_ERRORS = {
   declined: 'Sign-in was cancelled.',
@@ -202,13 +203,7 @@ export default function App() {
         onUpgrade={() => upgrade('month')}
       />
 
-      <footer className="app-foot">
-        <a href="/privacy.html">Privacy</a>
-        <a href="/terms.html">Terms</a>
-        <button className="danger-link" onClick={deleteAccount}>
-          Delete account
-        </button>
-      </footer>
+      <Footer onDeleteAccount={deleteAccount} />
     </div>
   )
 }

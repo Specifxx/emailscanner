@@ -423,7 +423,7 @@ button {
   text-decoration: underline;
 }
 
-.app-foot {
+.app-footer {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -434,17 +434,17 @@ button {
   font-size: 12.5px;
 }
 
-.app-foot a {
+.app-footer a {
   color: var(--ink-faint);
   text-decoration: none;
 }
 
-.app-foot a:hover {
+.app-footer a:hover {
   color: var(--ink-soft);
   text-decoration: underline;
 }
 
-.danger-link {
+.delete-account {
   border: 0;
   background: none;
   padding: 0;
@@ -452,7 +452,7 @@ button {
   color: var(--ink-faint);
 }
 
-.danger-link:hover {
+.delete-account:hover {
   color: var(--danger);
   text-decoration: underline;
 }
