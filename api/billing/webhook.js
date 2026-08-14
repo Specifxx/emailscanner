@@ -25,9 +25,8 @@ async function applySubscription(subscription) {
       ? subscription.customer
       : subscription.customer?.id
 
-  const userId =
-    subscription.metadata?.userId ||
-    (customerId ? (await findUserByCustomerId(customerId))?.id : null)
+  const existing = customerId ? await findUserByCustomerId(customerId) : null
+  const userId = subscription.metadata?.userId || existing?.id
 
   if (!userId) {
     console.error('Subscription with no matching user:', subscription.id)
@@ -39,16 +38,26 @@ async function applySubscription(subscription) {
     ? new Date(subscription.current_period_end * 1000).toISOString()
     : null
 
-  await setPlan(userId, {
+  const patch = {
     plan,
     stripe_customer_id: customerId,
     stripe_subscription_id: subscription.id,
     plan_renews_at: renews,
-    // A plan change starts a fresh allowance rather than inheriting whatever
-    // was already spent on the old one.
-    scans_used: 0,
-    scan_period_start: null,
-  })
+    // Cancelling does not end the subscription immediately — Stripe keeps it
+    // active to the end of the paid period, so this only changes the wording.
+    plan_cancels: Boolean(subscription.cancel_at_period_end),
+  }
+
+  // Only a genuine plan change starts a fresh allowance. Stripe re-sends
+  // subscription.updated for unrelated things (a cancellation being scheduled,
+  // a card being updated), and resetting the counter on those would hand out
+  // free scans every time.
+  if (existing && existing.plan !== plan) {
+    patch.scans_used = 0
+    patch.scan_period_start = null
+  }
+
+  await setPlan(userId, patch)
 }
 
 export default async function handler(req, res) {

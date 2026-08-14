@@ -1,6 +1,11 @@
 import { getSession } from '../../lib/session.js'
 import { getUser } from '../../lib/supabase.js'
-import { billingEnabled, returnUrl, stripe } from '../../lib/billing.js'
+import {
+  billingEnabled,
+  explainStripeError,
+  returnUrl,
+  stripe,
+} from '../../lib/billing.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -30,6 +35,8 @@ export default async function handler(req, res) {
     res.status(200).json({ url: portal.url })
   } catch (err) {
     console.error('Portal failed:', err)
-    res.status(500).json({ error: 'Could not open billing. Try again.' })
+    res.status(500).json({
+      error: explainStripeError(err) || 'Could not open billing. Try again.',
+    })
   }
 }

@@ -13,6 +13,12 @@
 -- drop table if exists public.accounts;
 -- drop table if exists public.users;
 -- drop table if exists public.stats;
+--
+-- ALREADY RUNNING THE PRICING SCHEMA? You do not need to drop anything for the
+-- cancellation column. Run just this instead:
+--
+-- alter table public.users
+--   add column if not exists plan_cancels boolean not null default false;
 
 create table if not exists public.users (
   id uuid primary key default gen_random_uuid(),
@@ -27,6 +33,9 @@ create table if not exists public.users (
   stripe_customer_id text,
   stripe_subscription_id text,
   plan_renews_at timestamptz,
+  -- Set when someone cancels: Stripe keeps the subscription active until the
+  -- period ends, so the plan stays Pro and only the wording changes.
+  plan_cancels boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

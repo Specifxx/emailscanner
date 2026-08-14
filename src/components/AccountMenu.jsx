@@ -34,6 +34,12 @@ export default function AccountMenu({
   const capped = plan && plan.limit != null
   const remaining = capped ? Math.max(0, plan.limit - plan.used) : null
 
+  const renewal = plan?.renewsAt ? new Date(plan.renewsAt) : null
+  const renewalLabel =
+    renewal && !Number.isNaN(renewal.getTime())
+      ? renewal.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+      : null
+
   const run = (fn) => () => {
     setOpen(false)
     fn?.()
@@ -91,6 +97,14 @@ export default function AccountMenu({
             </div>
           ) : null}
 
+          {plan?.id === 'pro' && renewalLabel ? (
+            <div className="menu-renewal">
+              {plan.cancels
+                ? `Cancelled — Pro until ${renewalLabel}`
+                : `Renews ${renewalLabel}`}
+            </div>
+          ) : null}
+
           <div className="menu-group">
             {plan?.id === 'free' ? (
               <button className="menu-item accent" role="menuitem" onClick={run(onUpgrade)}>
@@ -100,7 +114,7 @@ export default function AccountMenu({
 
             {plan?.id === 'pro' && billing ? (
               <button className="menu-item" role="menuitem" onClick={run(onManage)}>
-                Manage billing
+                {plan.cancels ? 'Resume or update billing' : 'Manage or cancel plan'}
               </button>
             ) : null}
           </div>

@@ -60,6 +60,7 @@ export default async function handler(req, res) {
         used,
         mailboxLimit: plan.mailboxes === Infinity ? null : plan.mailboxes,
         renewsAt: user.plan_renews_at,
+        cancels: Boolean(user.plan_cancels),
       },
       accounts: accounts.map((account) => ({
         id: account.id,

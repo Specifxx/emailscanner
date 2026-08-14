@@ -145,6 +145,15 @@ npm run dev               # http://localhost:3000
    wired into `src/main.jsx`; this switches on collection for the project. It
    only sends events when served by Vercel, so local dev stays silent.
 
+## Routing
+
+`vercel.json` has one rewrite: everything that isn't `/api/…` and doesn't end in
+a file extension falls through to `index.html` for the SPA. The extension
+exclusion is load-bearing — without it the fallback swallows `og.png`,
+`robots.txt`, `privacy.html` and `terms.html` and serves the app shell instead.
+Only `source`, `destination`, `has` and `missing` are valid keys in a rewrite;
+adding anything else fails the deploy.
+
 ## Security notes
 
 - Mail access is **read-only** on both providers (`gmail.readonly`, `Mail.Read`).
