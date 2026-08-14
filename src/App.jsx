@@ -38,7 +38,7 @@ export default function App() {
   )
 
   const refresh = useCallback(
-    () =>
+       (silent = false) =>
       api
         .getMe()
         .then(setMe)
@@ -50,13 +50,13 @@ export default function App() {
             accounts: [],
             providers: err.body?.providers || current.providers,
           }))
-          setNotice("Couldn't reach the server. Please try again.")
+                    if (!silent) setNotice("Couldn't reach the server. Please try again.")
         }),
     []
   )
 
   useEffect(() => {
-    refresh().finally(() => setBooting(false))
+        refresh(true).finally(() => setBooting(false))
   }, [refresh])
 
   // Consumed once the initial state above has been read from it.
