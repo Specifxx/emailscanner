@@ -1,6 +1,12 @@
 import { getSession } from '../../lib/session.js'
 import { getUser, setPlan } from '../../lib/supabase.js'
-import { billingEnabled, priceId, returnUrl, stripe } from '../../lib/billing.js'
+import {
+  billingEnabled,
+  explainStripeError,
+  priceId,
+  returnUrl,
+  stripe,
+} from '../../lib/billing.js'
 import { readJsonBody } from '../../lib/http.js'
 
 export default async function handler(req, res) {
@@ -59,6 +65,8 @@ export default async function handler(req, res) {
     res.status(200).json({ url: checkout.url })
   } catch (err) {
     console.error('Checkout failed:', err)
-    res.status(500).json({ error: 'Could not start checkout. Try again.' })
+    res.status(500).json({
+      error: explainStripeError(err) || 'Could not start checkout. Try again.',
+    })
   }
 }

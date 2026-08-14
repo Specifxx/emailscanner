@@ -169,6 +169,7 @@ export default function App() {
       <SignIn
         providers={me.providers}
         billing={me.billing}
+        testMode={me.billingTestMode}
         notice={notice}
       />
     )
@@ -222,6 +223,7 @@ export default function App() {
           <Pricing
             currentPlan={plan?.id}
             billing={me.billing}
+            testMode={me.billingTestMode}
             onUpgrade={checkout}
             mailCopy={
               me.providers.some((p) => p.id === 'microsoft')

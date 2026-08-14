@@ -33,6 +33,7 @@ export const TIERS = [
 export default function Pricing({
   currentPlan,
   billing,
+  testMode,
   onUpgrade,
   busy,
   mailCopy = 'Gmail',
@@ -43,6 +44,14 @@ export default function Pricing({
     <section className="pricing" id="pricing">
       <h2>Simple pricing</h2>
       <p className="pricing-lead">Start free. Upgrade only if you outgrow it.</p>
+
+      {testMode ? (
+        <div className="test-mode-banner">
+          <strong>Stripe sandbox</strong> Checkout is running on test keys, so
+          real cards will be declined. Use <code>4242 4242 4242 4242</code> with
+          any future expiry and CVC.
+        </div>
+      ) : null}
 
       <div className="toggle" role="group" aria-label="Billing period">
         <button

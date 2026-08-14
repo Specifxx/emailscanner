@@ -89,7 +89,7 @@ function steps(copy) {
   ]
 }
 
-export default function SignIn({ providers, billing, notice }) {
+export default function SignIn({ providers, billing, testMode, notice }) {
   const copy = providerCopy(providers)
   const PROMISES = promises(copy)
   const STEPS = steps(copy)
@@ -187,6 +187,7 @@ export default function SignIn({ providers, billing, notice }) {
       <Pricing
         currentPlan={null}
         billing={billing}
+        testMode={testMode}
         onUpgrade={() => {}}
         mailCopy={copy.mail}
       />

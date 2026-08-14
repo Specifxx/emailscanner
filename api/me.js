@@ -3,7 +3,7 @@ import { getUser, listAccounts } from '../lib/supabase.js'
 import { configuredProviders } from '../lib/config.js'
 import { getProvider } from '../lib/providers/index.js'
 import { getPlan, isUnlimited, periodStart } from '../lib/plans.js'
-import { billingEnabled } from '../lib/billing.js'
+import { billingEnabled, isTestMode } from '../lib/billing.js'
 
 export default async function handler(req, res) {
   const providers = configuredProviders().map((id) => ({
@@ -11,12 +11,15 @@ export default async function handler(req, res) {
     label: getProvider(id).label,
   }))
   const billing = billingEnabled()
+  // Surfaced so the pricing UI can say so out loud — a sandbox key declines
+  // every real card, and there is no other clue until checkout fails.
+  const billingTestMode = billing && isTestMode()
 
   const session = getSession(req)
   if (!session) {
     return res
       .status(200)
-      .json({ user: null, accounts: [], providers, billing })
+      .json({ user: null, accounts: [], providers, billing, billingTestMode })
   }
 
   try {
@@ -28,7 +31,7 @@ export default async function handler(req, res) {
     if (!user) {
       return res
         .status(200)
-        .json({ user: null, accounts: [], providers, billing })
+        .json({ user: null, accounts: [], providers, billing, billingTestMode })
     }
 
     const plan = getPlan(user.plan)
@@ -46,6 +49,7 @@ export default async function handler(req, res) {
         picture: user.picture,
       },
       billing,
+      billingTestMode,
       plan: {
         id: plan.id,
         name: plan.name,
@@ -69,6 +73,6 @@ export default async function handler(req, res) {
     console.error('Could not load accounts:', err)
     // Still hand back the provider list — without it the sign-in screen would
     // render with no way to sign in.
-    res.status(500).json({ error: err.message, providers, billing })
+    res.status(500).json({ error: err.message, providers, billing, billingTestMode })
   }
 }
