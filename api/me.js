@@ -1,12 +1,11 @@
 import { getSession } from '../lib/session.js'
-import { getUser, listAccounts } from '../lib/supabase.js'
 import { configuredProviders } from '../lib/config.js'
 import { getProvider } from '../lib/providers/index.js'
-import { getPlan, isUnlimited, periodStart } from '../lib/plans.js'
 import { billingEnabled, isTestMode } from '../lib/billing.js'
 
+export const config = { maxDuration: 30 }
 export default async function handler(req, res) {
-  const providers = configuredProviders().map((id) => ({
+    const providers = configuredProviders().map((id) => ({
     id,
     label: getProvider(id).label,
   }))
@@ -23,7 +22,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const [accounts, user] = await Promise.all([
+    const { getUser, listAccounts } = await import('../lib/supabase.js')
+      const { getPlan, isUnlimited, periodStart } = await import('../lib/plans.js')
+        const [accounts, user] = await Promise.all([
       listAccounts(session.uid),
       getUser(session.uid),
     ])
