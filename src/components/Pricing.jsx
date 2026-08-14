@@ -10,27 +10,33 @@ export const TIERS = [
     features: [
       '5 scans per day',
       'Up to 2 mailboxes',
-      'Gmail and Outlook',
+      '__MAIL__',
       'Read and unread mail',
     ],
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: 24,
-    priceAnnual: 20,
+    price: 12,
+    priceAnnual: 10,
     featured: true,
     blurb: 'For inboxes you actually live in.',
     features: [
       'Unlimited scans',
       'Unlimited mailboxes',
-      'Gmail and Outlook',
+      '__MAIL__',
       'Priority support',
     ],
   },
 ]
 
-export default function Pricing({ currentPlan, billing, onUpgrade, busy }) {
+export default function Pricing({
+  currentPlan,
+  billing,
+  onUpgrade,
+  busy,
+  mailCopy = 'Gmail',
+}) {
   const [annual, setAnnual] = useState(false)
 
   return (
@@ -80,7 +86,9 @@ export default function Pricing({ currentPlan, billing, onUpgrade, busy }) {
 
               <ul className="tier-features">
                 {tier.features.map((feature) => (
-                  <li key={feature}>{feature}</li>
+                  <li key={feature}>
+                    {feature === '__MAIL__' ? mailCopy : feature}
+                  </li>
                 ))}
               </ul>
 

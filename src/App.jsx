@@ -6,6 +6,7 @@ import SearchBar from './components/SearchBar.jsx'
 import Mailboxes from './components/Mailboxes.jsx'
 import Results from './components/Results.jsx'
 import Footer from './components/Footer.jsx'
+import Pricing from './components/Pricing.jsx'
 
 const OAUTH_ERRORS = {
   declined: 'Sign-in was cancelled.',
@@ -29,6 +30,7 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [state, setState] = useState({ status: 'idle' })
   const [notice, setNotice] = useState(null)
+  const [showPricing, setShowPricing] = useState(false)
 
   const refresh = useCallback(
     () =>
@@ -64,7 +66,7 @@ export default function App() {
     window.history.replaceState({}, '', window.location.pathname)
   }, [])
 
-  const upgrade = useCallback(async (interval) => {
+  const checkout = useCallback(async (interval) => {
     setNotice(null)
     try {
       await api.upgrade(interval)
@@ -72,6 +74,15 @@ export default function App() {
       setNotice(err.message)
     }
   }, [])
+
+  // Clicking the logo returns to a clean slate rather than reloading the page.
+  function goHome() {
+    setShowPricing(false)
+    setQuery('')
+    setState({ status: 'idle' })
+    setNotice(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const runSearch = useCallback(async (text) => {
     const trimmed = text.trim()
@@ -179,9 +190,11 @@ export default function App() {
         user={me.user}
         plan={plan}
         billing={me.billing}
+        onHome={goHome}
         onSignOut={signOut}
-        onUpgrade={() => upgrade('month')}
+        onUpgrade={() => setShowPricing(true)}
         onManage={() => api.manageBilling().catch((e) => setNotice(e.message))}
+        onDeleteAccount={deleteAccount}
       />
       <Mailboxes
         accounts={me.accounts}
@@ -196,12 +209,35 @@ export default function App() {
         busy={state.status === 'loading'}
       />
       {notice ? <div className="error">{notice}</div> : null}
-      <Results
-        state={state}
-        multiple={me.accounts.length > 1}
-        billing={me.billing}
-        onUpgrade={() => upgrade('month')}
-      />
+
+      {showPricing ? (
+        <div className="pricing-panel">
+          <button
+            className="panel-close"
+            onClick={() => setShowPricing(false)}
+            aria-label="Close pricing"
+          >
+            ×
+          </button>
+          <Pricing
+            currentPlan={plan?.id}
+            billing={me.billing}
+            onUpgrade={checkout}
+            mailCopy={
+              me.providers.some((p) => p.id === 'microsoft')
+                ? 'Gmail and Outlook'
+                : 'Gmail'
+            }
+          />
+        </div>
+      ) : (
+        <Results
+          state={state}
+          multiple={me.accounts.length > 1}
+          billing={me.billing}
+          onUpgrade={() => setShowPricing(true)}
+        />
+      )}
 
       <Footer onDeleteAccount={deleteAccount} />
     </div>

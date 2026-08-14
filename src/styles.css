@@ -561,6 +561,20 @@ button {
   object-fit: cover;
 }
 
+.brand-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+
+.brand-btn:hover {
+  opacity: 0.7;
+}
+
 .usage {
   font-size: 12.5px;
   color: var(--ink-faint);
@@ -568,6 +582,7 @@ button {
   border: 1px solid var(--line);
   border-radius: 999px;
   white-space: nowrap;
+  background: none;
 }
 
 .usage.low {
@@ -601,6 +616,159 @@ button {
 
 .signout:hover {
   color: var(--ink);
+}
+
+/* ---------- Account menu ---------- */
+
+.account {
+  position: relative;
+}
+
+.account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: none;
+  padding: 2px;
+  border-radius: 999px;
+  color: var(--ink-faint);
+}
+
+.account-trigger:hover {
+  color: var(--ink-soft);
+}
+
+.caret {
+  transition: transform 0.15s ease;
+}
+
+.caret.up {
+  transform: rotate(180deg);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  min-width: 232px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(16, 16, 20, 0.11);
+  overflow: hidden;
+}
+
+.menu-head {
+  padding: 13px 15px 11px;
+}
+
+.menu-name {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.menu-email {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-plan {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 15px 12px;
+}
+
+.plan-tag {
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #f2f2f5;
+  color: var(--ink-soft);
+}
+
+.plan-tag.pro {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.plan-usage {
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.menu-group {
+  border-top: 1px solid var(--line);
+  padding: 5px;
+}
+
+.menu-group:empty {
+  display: none;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13.5px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.menu-item:hover {
+  background: #f6f6f8;
+}
+
+.menu-item.accent {
+  color: var(--accent);
+  font-weight: 550;
+}
+
+.menu-item.danger:hover {
+  color: var(--danger);
+}
+
+/* ---------- Pricing panel ---------- */
+
+.pricing-panel {
+  position: relative;
+  margin-top: 30px;
+}
+
+.pricing-panel .pricing {
+  padding: 0;
+}
+
+.panel-close {
+  position: absolute;
+  top: -6px;
+  right: 0;
+  z-index: 2;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink-faint);
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.panel-close:hover {
+  color: var(--ink);
+  border-color: #dcdce2;
 }
 
 /* ---------- Search ---------- */

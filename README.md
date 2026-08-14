@@ -38,7 +38,7 @@ returns everything else and flags the one that needs reconnecting.
 |---|---|---|
 | Scans | 5 per day | Unlimited |
 | Mailboxes | 2 | Unlimited |
-| Price | — | $24/month, or $20/month billed yearly |
+| Price | — | $12/month, or $10/month billed yearly |
 
 Limits live in `lib/plans.js`, where `Infinity` means uncapped. Enforcement is
 server-side in `api/scan.js`: a scan is claimed through the `consume_scan`
