@@ -52,9 +52,43 @@ export function deleteMyAccount() {
     return request('/api/account/delete', { method: 'POST' })
 }
 
-/** Full page navigation — the OAuth dance has to leave the SPA. */
-export function connect(provider) {
+const INTENT_KEY = 'afterSignIn'
+
+/**
+ * Full page navigation — the OAuth dance has to leave the SPA. `intent` is
+ * remembered in sessionStorage rather than a query param: it survives the round
+ * trip to the provider and back, and never leaves the browser.
+ */
+export function connect(provider, intent) {
+  try {
+    if (intent) sessionStorage.setItem(INTENT_KEY, intent)
+    else sessionStorage.removeItem(INTENT_KEY)
+  } catch {
+    // Private browsing can block storage. Losing the intent is survivable.
+  }
   window.location.href = `/api/auth/start?provider=${encodeURIComponent(provider)}`
+}
+
+/**
+ * Reading and clearing are separate on purpose. StrictMode double-invokes both
+ * state initialisers and effects, so a read that also clears would consume the
+ * intent during the first mount and leave the second — the one whose state is
+ * kept — with nothing. Peek is pure and safe to repeat; clearing is idempotent.
+ */
+export function peekIntent() {
+  try {
+    return sessionStorage.getItem(INTENT_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function clearIntent() {
+  try {
+    sessionStorage.removeItem(INTENT_KEY)
+  } catch {
+    // Nothing to do if storage is unavailable.
+  }
 }
 
 export async function upgrade(interval = 'month') {

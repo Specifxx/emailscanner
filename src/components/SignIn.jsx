@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import * as api from '../api.js'
 import ProviderMark from './ProviderMark.jsx'
 import Pricing from './Pricing.jsx'
@@ -93,6 +94,19 @@ export default function SignIn({ providers, billing, testMode, notice }) {
   const copy = providerCopy(providers)
   const PROMISES = promises(copy)
   const STEPS = steps(copy)
+  const [prompt, setPrompt] = useState(false)
+
+  /**
+   * Nobody can be upgraded before there is an account to attach the
+   * subscription to, so Pro starts the sign-in flow and remembers why — the
+   * pricing panel reopens on the other side.
+   */
+  function upgrade() {
+    if (providers.length === 1) return api.connect(providers[0].id, 'upgrade')
+    // More than one way in, so ask rather than picking for them.
+    setPrompt(true)
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const buttons = (
     <div className="signin-buttons">
@@ -188,8 +202,29 @@ export default function SignIn({ providers, billing, testMode, notice }) {
         currentPlan={null}
         billing={billing}
         testMode={testMode}
-        onUpgrade={() => {}}
+        onUpgrade={upgrade}
         mailCopy={copy.mail}
+        signInPrompt={
+          prompt ? (
+            <div className="signin-prompt">
+              <strong>Sign in first</strong>
+              Pro is attached to your account, so pick a mailbox to continue
+              with. You'll come straight back here.
+              <div className="signin-buttons">
+                {providers.map((provider) => (
+                  <button
+                    key={provider.id}
+                    className="provider-btn"
+                    onClick={() => api.connect(provider.id, 'upgrade')}
+                  >
+                    <ProviderMark provider={provider.id} />
+                    Continue with {provider.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null
+        }
       />
 
       <section className="closer">

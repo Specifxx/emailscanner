@@ -30,7 +30,12 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [state, setState] = useState({ status: 'idle' })
   const [notice, setNotice] = useState(null)
-  const [showPricing, setShowPricing] = useState(false)
+  // Someone who clicked "Upgrade to Pro" while signed out was sent through
+  // sign-in first. A pure read here (rather than a read-and-clear in an effect)
+  // is what survives StrictMode's discarded first mount.
+  const [showPricing, setShowPricing] = useState(
+    () => api.peekIntent() === 'upgrade'
+  )
 
   const refresh = useCallback(
     () =>
@@ -53,6 +58,11 @@ export default function App() {
   useEffect(() => {
     refresh().finally(() => setBooting(false))
   }, [refresh])
+
+  // Consumed once the initial state above has been read from it.
+  useEffect(() => {
+    api.clearIntent()
+  }, [])
 
   // Reading the OAuth error is a side effect (it rewrites the URL), so it
   // belongs here rather than in a useState initialiser, which StrictMode

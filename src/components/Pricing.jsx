@@ -37,6 +37,7 @@ export default function Pricing({
   onUpgrade,
   busy,
   mailCopy = 'Gmail',
+  signInPrompt = null,
 }) {
   const [annual, setAnnual] = useState(false)
 
@@ -130,6 +131,8 @@ export default function Pricing({
           </a>
         </div>
       </div>
+
+      {signInPrompt}
     </section>
   )
 }
