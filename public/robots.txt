@@ -5,4 +5,4 @@ Allow: /
 # redirects and cookies.
 Disallow: /api/
 
-Sitemap: https://emailscanner-pi.vercel.app/sitemap.xml
+Sitemap: https://www.scanmyemails.com/sitemap.xml

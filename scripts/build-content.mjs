@@ -13,7 +13,7 @@ import { marked } from 'marked'
 const ROOT = path.resolve(import.meta.dirname, '..')
 const CONTENT = path.join(ROOT, 'content')
 const OUT = path.join(ROOT, 'public', 'guides')
-const SITE = process.env.SITE_URL || 'https://emailscanner-pi.vercel.app'
+const SITE = process.env.SITE_URL || 'https://www.scanmyemails.com'
 
 /** Minimal frontmatter: `key: value` lines between --- fences. */
 function parseFrontmatter(raw) {
@@ -165,12 +165,15 @@ for (const file of files) {
 }
 
 const urls = [
-  { loc: `${SITE}/`, priority: '1.0' },
+  { loc: `${SITE}/`, changefreq: 'weekly', priority: '1.0' },
   ...pages.map((p) => ({
     loc: `${SITE}/guides/${p.slug}`,
     lastmod: p.date,
+    changefreq: 'monthly',
     priority: '0.8',
   })),
+  { loc: `${SITE}/privacy.html`, changefreq: 'monthly', priority: '0.3' },
+  { loc: `${SITE}/terms.html`, changefreq: 'monthly', priority: '0.3' },
 ]
 
 await writeFile(
@@ -180,7 +183,7 @@ await writeFile(
 ${urls
   .map(
     (u) =>
-      `  <url><loc>${u.loc}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}<priority>${u.priority}</priority></url>`
+      `  <url><loc>${u.loc}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}<changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`
   )
   .join('\n')}
 </urlset>

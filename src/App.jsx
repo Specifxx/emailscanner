@@ -38,7 +38,10 @@ export default function App() {
   )
 
   const refresh = useCallback(
-    () =>
+    // The first load is silent: a cold serverless start can lose the race and
+    // an error banner on arrival is worse than no banner. Later refreshes are
+    // user-initiated, so those do report failure.
+    (silent = false) =>
       api
         .getMe()
         .then(setMe)
@@ -50,13 +53,13 @@ export default function App() {
             accounts: [],
             providers: err.body?.providers || current.providers,
           }))
-          setNotice("Couldn't reach the server. Please try again.")
+          if (!silent) setNotice("Couldn't reach the server. Please try again.")
         }),
     []
   )
 
   useEffect(() => {
-    refresh().finally(() => setBooting(false))
+    refresh(true).finally(() => setBooting(false))
   }, [refresh])
 
   // Consumed once the initial state above has been read from it.
