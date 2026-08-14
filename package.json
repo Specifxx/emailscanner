@@ -8,13 +8,15 @@
   },
   "scripts": {
     "dev": "concurrently -k \"node server/dev.js\" \"vite\"",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "node scripts/build-content.mjs && vite build",
+    "preview": "vite preview",
+    "build:content": "node scripts/build-content.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "@vercel/analytics": "^2.0.1",
     "jsonwebtoken": "^9.0.2",
+    "marked": "^18.0.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "stripe": "^22.5.0"

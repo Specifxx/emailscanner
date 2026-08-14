@@ -4,3 +4,5 @@ Allow: /
 # Nothing behind /api is useful to a crawler, and the OAuth routes issue
 # redirects and cookies.
 Disallow: /api/
+
+Sitemap: https://emailscanner-pi.vercel.app/sitemap.xml

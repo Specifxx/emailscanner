@@ -147,10 +147,11 @@ npm run dev               # http://localhost:3000
 
 ## Routing
 
-`vercel.json` has one rewrite: everything that isn't `/api/…` and doesn't end in
-a file extension falls through to `index.html` for the SPA. The extension
-exclusion is load-bearing — without it the fallback swallows `og.png`,
-`robots.txt`, `privacy.html` and `terms.html` and serves the app shell instead.
+`vercel.json` has one rewrite: everything that isn't `/api/…` or `/guides/…`,
+and doesn't end in a file extension, falls through to `index.html` for the SPA.
+Both exclusions are load-bearing — without the extension rule the fallback
+swallows `og.png`, `robots.txt`, `sitemap.xml` and the privacy/terms pages;
+without the `/guides/` rule it serves the app shell instead of each article.
 Only `source`, `destination`, `has` and `missing` are valid keys in a rewrite;
 adding anything else fails the deploy.
 
@@ -177,3 +178,24 @@ Everything that decides *what counts as a match* lives in two files:
   words that select a category. Add a category by appending to `CATEGORIES`.
 - `lib/scorer.js` — field multipliers, the phrase bonus, recency decay, and the
   unread boost.
+
+## Publishing guides
+
+SEO content lives in `content/*.md` with `title`, `description` and `date` in
+frontmatter. `npm run build` renders each one to a **static** page at
+`/guides/<slug>` and regenerates `sitemap.xml`.
+
+These are deliberately not routes inside the SPA. Search engines can render
+JavaScript, but static HTML is indexed faster and more reliably, and a guide has
+no reason to boot React to show a paragraph. Each page ships its own canonical
+URL, Open Graph tags, and Article structured data.
+
+`vercel.json` excludes `/guides/` from the SPA fallback — without that the
+rewrite serves the app shell instead of the article.
+
+Add a guide:
+
+```bash
+$EDITOR content/my-new-guide.md   # frontmatter + markdown
+npm run build                     # writes public/guides/my-new-guide/index.html
+```
